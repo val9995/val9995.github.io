@@ -10,46 +10,28 @@ app.use(compression());
 // 添加缓存控制
 app.use((req, res, next) => {
     if (req.url.endsWith('.pdf')) {
-        res.setHeader('Cache-Control', 'public, max-age=86400'); // 24小时缓存
+        res.setHeader('Cache-Control', 'public, max-age=86400');
     }
     next();
 });
 
-// 配置静态文件服务
-app.use(express.static(__dirname, {
-    setHeaders: (res, path) => {
-        // 设置通用响应头
-        res.set('Access-Control-Allow-Origin', '*');
-        res.set('Access-Control-Allow-Methods', 'GET, OPTIONS');
-        res.set('Access-Control-Allow-Headers', 'Content-Type');
-        
-        // 为PDF文件设置特定响应头
-        if (path.endsWith('.pdf')) {
-            res.set('Content-Type', 'application/pdf');
-            res.set('Content-Disposition', 'inline');
-        }
-    },
-    maxAge: '1h' // 静态资源缓存1小时
-}));
+// 配置静态文件服务，允许直接访问根目录的文件
+app.use(express.static(__dirname));
 
-// 专门处理PDF请求的路由
-app.get('/pdf/:filename', (req, res) => {
-    const filename = req.params.filename;
-    const filePath = path.join(__dirname, filename);
+// 专门处理 poetry.pdf 的路由
+app.get('/poetry.pdf', (req, res) => {
+    const filePath = path.join(__dirname, 'poetry.pdf');
     
-    // 检查文件是否存在
     if (!fs.existsSync(filePath)) {
         return res.status(404).send('PDF文件未找到');
     }
     
-    // 设置响应头
     res.set({
         'Content-Type': 'application/pdf',
         'Content-Disposition': 'inline',
         'Access-Control-Allow-Origin': '*'
     });
     
-    // 发送文件
     res.sendFile(filePath);
 });
 

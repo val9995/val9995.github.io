@@ -46,10 +46,9 @@
     // 加载PDF文件
     async function loadPDF() {
         try {
-            // 使用范围请求加载PDF
             const loadingTask = pdfjsLib.getDocument({
-                url: '/pdf/poetry.pdf',
-                rangeChunkSize: 65536, // 64KB chunks
+                url: '/poetry.pdf',
+                rangeChunkSize: 65536,
                 disableAutoFetch: true,
                 disableStream: false
             });
@@ -354,7 +353,7 @@
         matchCount.textContent = '搜索中...';
         
         try {
-            // 使用 Map 来去重，key 为页码，value 为该页第一个匹配结果
+            // 使用 Map 来去重，key 为页码，value ���该页第一个匹配结果
             const pageResults = new Map();
             
             // 从第16页搜索
