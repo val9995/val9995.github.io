@@ -46,12 +46,16 @@
     // 加载PDF文件
     async function loadPDF() {
         try {
-            // 1. 加载 PDF 文档
+            // 检测是否为移动设备
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            
             const loadingTask = pdfjsLib.getDocument({
                 url: '/poetry.pdf',
-                rangeChunkSize: 65536,
+                rangeChunkSize: isMobile ? 32768 : 65536,
                 disableAutoFetch: true,
-                disableStream: false
+                disableStream: false,
+                cMapUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdfjs-dist/3.11.174/cmaps/',
+                cMapPacked: true
             });
 
             // 显示文档加载进度
@@ -64,34 +68,39 @@
             pdfDoc = await loadingTask.promise;
             document.getElementById('page-count').textContent = pdfDoc.numPages;
             
-            // 2. 初始化页码跳转功能
+            // 初始化页码跳转功能
             initPageJump();
             
-            // 3. 显示渲染进度
-            document.querySelector('.loading-text').textContent = '页面渲染中...';
+            // 先渲染第一页并隐藏加载提示
             await renderPage(currentPage);
+            hideLoadingOverlay();
             
-            // 4. 显示目录生成进度
-            document.querySelector('.loading-text').textContent = '目录生成中...';
-            const specialOutline = await generateSpecialCharacterOutline();
-            if (specialOutline.length > 0) {
-                renderOutline(specialOutline);
-            }
-
-            // 5. 所有内容加载完成，隐藏加载提示
-            const loadingOverlay = document.querySelector('.loading-overlay');
-            loadingOverlay.style.opacity = '0';
-            setTimeout(() => {
-                loadingOverlay.style.display = 'none';
-            }, 300);
+            // 后台静默加载目录
+            setTimeout(async () => {
+                try {
+                    const specialOutline = await generateSpecialCharacterOutline();
+                    if (specialOutline.length > 0) {
+                        renderOutline(specialOutline);
+                    }
+                } catch (error) {
+                    console.error('Error generating outline:', error);
+                }
+            }, 100);
 
         } catch (error) {
             console.error('Error loading PDF:', error);
-            // 显示具体的错误提示
-            const errorMessage = error.message || '未知错误';
             document.querySelector('.loading-text').textContent = 
-                `加载失败：${errorMessage}\n请刷新页面重试`;
+                `加载失败：${error.message || '未知错误'}\n请刷新页面重试`;
         }
+    }
+
+    // 添加隐藏加载提示的函数
+    function hideLoadingOverlay() {
+        const loadingOverlay = document.querySelector('.loading-overlay');
+        loadingOverlay.style.opacity = '0';
+        setTimeout(() => {
+            loadingOverlay.style.display = 'none';
+        }, 300);
     }
 
     // 修改渲染页面函数
@@ -385,7 +394,7 @@
                 const textContent = await page.getTextContent();
                 const text = textContent.items.map(item => item.str).join(' ');
                 const searchRegex = new RegExp(searchText, 'gi');
-                const match = searchRegex.exec(text); // 只获取第一个匹配
+                const match = searchRegex.exec(text); // 只获取第一个匹��
                 
                 if (match) {
                     // 每页只保留第一个匹配结果
@@ -433,7 +442,7 @@
             }
         } catch (error) {
             console.error('Error in findAllMatches:', error);
-            matchCount.textContent = '搜索出错';
+            matchCount.textContent = '搜索出��';
         }
     }
 
