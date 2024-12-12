@@ -46,6 +46,7 @@
     // 加载PDF文件
     async function loadPDF() {
         try {
+            // 1. 加载 PDF 文档
             const loadingTask = pdfjsLib.getDocument({
                 url: '/poetry.pdf',
                 rangeChunkSize: 65536,
@@ -53,21 +54,43 @@
                 disableStream: false
             });
 
+            // 显示文档加载进度
+            loadingTask.onProgress = function(progress) {
+                const percent = (progress.loaded / progress.total * 100).toFixed(0);
+                document.querySelector('.loading-text').textContent = 
+                    `PDF加载中...${percent}%`;
+            };
+
             pdfDoc = await loadingTask.promise;
             document.getElementById('page-count').textContent = pdfDoc.numPages;
             
-            // 初始化页码跳转功能
+            // 2. 初始化页码跳转功能
             initPageJump();
             
-            // 先渲染当前页，再生成目录
+            // 3. 显示渲染进度
+            document.querySelector('.loading-text').textContent = '页面渲染中...';
             await renderPage(currentPage);
             
+            // 4. 显示目录生成进度
+            document.querySelector('.loading-text').textContent = '目录生成中...';
             const specialOutline = await generateSpecialCharacterOutline();
             if (specialOutline.length > 0) {
                 renderOutline(specialOutline);
             }
+
+            // 5. 所有内容加载完成，隐藏加载提示
+            const loadingOverlay = document.querySelector('.loading-overlay');
+            loadingOverlay.style.opacity = '0';
+            setTimeout(() => {
+                loadingOverlay.style.display = 'none';
+            }, 300);
+
         } catch (error) {
             console.error('Error loading PDF:', error);
+            // 显示具体的错误提示
+            const errorMessage = error.message || '未知错误';
+            document.querySelector('.loading-text').textContent = 
+                `加载失败：${errorMessage}\n请刷新页面重试`;
         }
     }
 
@@ -353,7 +376,7 @@
         matchCount.textContent = '搜索中...';
         
         try {
-            // 使用 Map 来去重，key 为页码，value ���该页第一个匹配结果
+            // 使用 Map 来去重，key 为页码，value 为该页第一个匹配结果
             const pageResults = new Map();
             
             // 从第16页搜索
@@ -756,7 +779,7 @@
                 document.getElementById('page-num').textContent = currentPage;
             }
             
-            // 监听回车和失去焦点事
+            // 监听输入和失去焦点事件
             input.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') {
                     e.preventDefault();
