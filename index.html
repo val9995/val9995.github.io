@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>这世界只是偶尔温柔</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof pdfjsLib !== 'undefined') {
+                pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+            }
+        });
+    </script>
+</head>
+<body>
+    <div class="loading-overlay">
+        <div class="loading-text">资源加载中...</div>
+    </div>
+    <div class="toolbar">
+        <button id="toggleOutline">目录</button>
+        <div class="search-container">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="搜索...">
+                <button id="searchBtn">
+                    <svg viewBox="0 0 24 24" width="18" height="18">
+                        <path fill="currentColor" d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0A4.5 4.5 0 1 1 14 9.5 4.5 4.5 0 0 1 9.5 14z"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="search-results" id="searchResults">
+                <div class="search-stats">
+                    <span id="matchCount"></span>
+                    <div class="search-navigation">
+                        <button id="prevMatch" title="上一个">↑</button>
+                        <button id="nextMatch" title="下一个">↓</button>
+                        <button id="closeSearch" title="关闭">×</button>
+                    </div>
+                </div>
+                <div class="search-list" id="searchList"></div>
+            </div>
+        </div>
+    </div>
+    <div class="main-content">
+        <div id="outlineContainer" class="outline-container"></div>
+        <div class="container">
+            <div id="pdf-container">
+                <div id="text-layer"></div>
+                <canvas id="pdf-render"></canvas>
+            </div>
+            <div class="page-info">
+                <span id="page-num"></span>/<span id="page-count"></span>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof pdfjsLib === 'undefined') {
+                alert('PDF.js 加载失败，请检查网络连接后刷新页面');
+                return;
+            }
+            
+            const script = document.createElement('script');
+            script.src = 'script.js';
+            script.onerror = function() {
+                console.error('Failed to load script.js');
+                alert('加载失败，请刷新页面重试');
+            };
+            document.body.appendChild(script);
+        });
+    </script>
+</body>
+</html>
